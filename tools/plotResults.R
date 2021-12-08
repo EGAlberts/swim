@@ -111,6 +111,31 @@ periodUtilitySEAMS2017A <- function(maxServers, maxServiceRate, arrivalRateMean,
                            pmin(0.0, arrivalRateMean - maxThroughput) * optRevenue))
 }
 
+# utility function used for
+#   Ilias Gerostathopoulos, Claudia Raibulet, Elvin Alberts.
+#   "Designing Self-Adaptive Strategies Using Cost-Benefit Analysis
+#   19TH IEEE International Conferecne on Software Architecture (ICSA 2022)
+periodUtilityICSA2022 <- function(maxServers, maxServiceRate, arrivalRateMean, dimmer,
+                                  evaluationPeriod, RT_THRESHOLD, avgResponseTime,
+                                  avgServers) {
+  basicRevenue <- 1
+  optRevenue <- 1.5
+  serverCost <- 10
+  
+  precision <- 1e-5
+  
+  maxThroughput <- maxServers * maxServiceRate
+
+  Ur <- (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
+  Uc <- serverCost * (maxServers - avgServers)
+  UrOpt <- arrivalRateMean * optRevenue
+  
+  utility <- ifelse(avgResponseTime <= RT_THRESHOLD & Ur >= UrOpt - precision, Ur + Uc,
+                    ifelse(avgResponseTime <= RT_THRESHOLD, Ur,
+                           (pmin(0.0, arrivalRateMean - maxThroughput) * optRevenue) + Uc))
+}
+
+
 readVector <- function(dbconn, vectorName, moduleName) {
     query <- paste("SELECT simtimeRaw/1e12 as x, CAST(value as REAL) as y FROM vector NATURAL JOIN vectorData",
                   " WHERE vectorName='", vectorName, "'", sep="")
@@ -121,7 +146,7 @@ readVector <- function(dbconn, vectorName, moduleName) {
 }
 
 plotResults <- function(config, folder="SWIM", run, saveAs=NULL, instantaneousUtility=FALSE,
-                         periodGrid=FALSE, utilityFc=periodUtilitySEAMS2017A,
+                         periodGrid=FALSE, utilityFc=periodUtilityICSA2022,
                          brief=FALSE) {
   USE_COMPUTED_UTILITY <- TRUE
   require(reshape2)
