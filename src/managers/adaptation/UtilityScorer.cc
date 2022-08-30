@@ -29,7 +29,6 @@ double UtilityScorer::getAccruedUtility(const Model& model, const Configuration&
     double brownoutRevenue = 1;
     double normalRevenue = 1.5;
     double maxThroughput = model.getMaxServers() * MAX_SERVICE_RATE;
-
     const auto& sysmodule = omnetpp::getSimulation()->getSystemModule();
     if (sysmodule->hasPar(OPT_REVENUE)) {
         normalRevenue = sysmodule->par(OPT_REVENUE);
@@ -52,5 +51,10 @@ double UtilityScorer::getAccruedUtility(const Model& model, const Configuration&
     double utility = ((observations.avgResponseTime>RT_THRESHOLD || observations.avgResponseTime < 0) ? std::min(0.0, throughput * normalRevenue - latePenalty) : positiveUtility);
 
     return utility / model.getEvaluationPeriod();
+
 }
+
+
+
+
 

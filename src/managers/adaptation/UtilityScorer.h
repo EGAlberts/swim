@@ -40,6 +40,7 @@ public:
      * Computes utility accrued
      */
     static double getAccruedUtility(const Model& model, const Configuration& configuration, const Environment& environment, const Observations& observations);
+
 };
 
 #endif /* UTILITYSCORER_H_ */

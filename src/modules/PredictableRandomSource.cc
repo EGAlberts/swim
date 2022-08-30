@@ -82,7 +82,6 @@ bool PredictableRandomSource::generateArrival() {
     if (timeInPeriod >= PERIOD_LENGTH) {
 #endif
         timeInPeriod = fmod(timeInPeriod, PERIOD_LENGTH);
-
         // TODO this should be in initialize
         string s =  getSimulation()->getSystemModule()->par("normalServiceTime").getExpression()->str();
         double serviceTime = atof(s.substr(s.find('(') + 1).c_str());

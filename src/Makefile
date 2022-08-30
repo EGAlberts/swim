@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for swim
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -o swim -I. -Imodel/pladaptMock -I../../queueinglib -L../libs -L../../queueinglib/ -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread
+#  opp_makemake -f --deep -o swim -KQUEUEINGLIB_PROJ=../../queueinglib -I. -Imodel/pladaptMock -I$$\(QUEUEINGLIB_PROJ\) -I/usr/include/python3.5m/ -I. -Imodel/pladaptMock -I$$\(QUEUEINGLIB_PROJ\) -L../libs -L../../queueinglib/ -L../libs -L$$\(QUEUEINGLIB_PROJ\) -L$$\(QUEUEINGLIB_PROJ\) -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread -lpython3.5m -- -lboost_system
 #
 
 # Name of target to be created (-o option)
@@ -16,13 +16,20 @@ USERIF_LIBS = $(ALL_ENV_LIBS) # that is, $(TKENV_LIBS) $(QTENV_LIBS) $(CMDENV_LI
 #USERIF_LIBS = $(QTENV_LIBS)
 
 # C++ include paths (with -I)
-INCLUDE_PATH = -I. -Imodel/pladaptMock -I../../queueinglib
+INCLUDE_PATH = \
+    -I. \
+    -Imodel/pladaptMock \
+    -I$(QUEUEINGLIB_PROJ) \
+    -I/usr/include/python3.5m/ \
+    -I. \
+    -Imodel/pladaptMock \
+    -I$(QUEUEINGLIB_PROJ)
 
 # Additional object and library files to link with
-EXTRA_OBJS =
+EXTRA_OBJS = -lboost_system
 
 # Additional libraries (-L, -l options)
-LIBS = $(LDFLAG_LIBPATH)../libs $(LDFLAG_LIBPATH)../../queueinglib/  -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread
+LIBS = $(LDFLAG_LIBPATH)../libs $(LDFLAG_LIBPATH)../../queueinglib/ $(LDFLAG_LIBPATH)../libs $(LDFLAG_LIBPATH)$(QUEUEINGLIB_PROJ) $(LDFLAG_LIBPATH)$(QUEUEINGLIB_PROJ)  -lqueueinglib -lboost_serialization -lboost_system -lboost_filesystem -lpthread -lpython3.5m
 
 # Output directory
 PROJECT_OUTPUT_DIR = ../out
@@ -33,6 +40,8 @@ O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 OBJS = \
     $O/externalControl/AdaptInterface.o \
     $O/managers/adaptation/BaseAdaptationManager.o \
+    $O/managers/adaptation/DummyAdaptationManager.o \
+    $O/managers/adaptation/PythonAdaptationManager.o \
     $O/managers/adaptation/ReactiveAdaptationManager.o \
     $O/managers/adaptation/ReactiveAdaptationManager2.o \
     $O/managers/adaptation/UtilityScorer.o \
@@ -66,14 +75,19 @@ OBJS = \
     $O/util/ServerUtilization.o \
     $O/util/TimeWindowStats.o \
     $O/util/Utils.o \
-    $O/managers/execution/BootComplete_m.o
+    $O/managers/execution/BootComplete_m.o \
+    $O/managers/execution/RemoveComplete_m.o
 
 # Message files
 MSGFILES = \
-    managers/execution/BootComplete.msg
+    managers/execution/BootComplete.msg \
+    managers/execution/RemoveComplete.msg
 
 # SM files
 SMFILES =
+
+# Other makefile variables (-K)
+QUEUEINGLIB_PROJ=../../queueinglib
 
 #------------------------------------------------------------------------------
 
@@ -98,7 +112,7 @@ include $(CONFIGFILE)
 # Simulation kernel and user interface libraries
 OMNETPP_LIBS = $(OPPMAIN_LIB) $(USERIF_LIBS) $(KERNEL_LIBS) $(SYS_LIBS)
 ifneq ($(TOOLCHAIN_NAME),clangc2)
-LIBS += -Wl,-rpath,$(abspath ../libs) -Wl,-rpath,$(abspath ../../queueinglib/)
+LIBS += -Wl,-rpath,$(abspath ../libs) -Wl,-rpath,$(abspath ../../queueinglib/) -Wl,-rpath,$(abspath ../libs) -Wl,-rpath,$(abspath $(QUEUEINGLIB_PROJ)) -Wl,-rpath,$(abspath $(QUEUEINGLIB_PROJ))
 endif
 
 COPTS = $(CFLAGS) $(IMPORT_DEFINES)  $(INCLUDE_PATH) -I$(OMNETPP_INCL_DIR)

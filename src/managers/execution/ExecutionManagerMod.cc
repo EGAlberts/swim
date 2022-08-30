@@ -108,6 +108,7 @@ BootComplete* ExecutionManagerMod::doAddServer(bool instantaneous) {
         double mean = Utils::getMeanAndVarianceFromParameter(pNewSubmodule->par("serviceTime"), &variance);
         pModel->setServiceTime(mean, variance);
         mean = Utils::getMeanAndVarianceFromParameter(pNewSubmodule->par("lowFidelityServiceTime"), &variance);
+
         pModel->setLowFidelityServiceTime(mean, variance);
         pModel->setBrownoutFactor(pNewSubmodule->par("brownoutFactor"));
     }

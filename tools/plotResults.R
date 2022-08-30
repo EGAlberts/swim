@@ -111,6 +111,46 @@ periodUtilitySEAMS2017A <- function(maxServers, maxServiceRate, arrivalRateMean,
                            pmin(0.0, arrivalRateMean - maxThroughput) * optRevenue))
 }
 
+periodUtilitySEAMS2022 <- function(maxServers, maxServiceRate, arrivalRateMean, dimmer,
+                                  evaluationPeriod, RT_THRESHOLD, avgResponseTime,
+                                  avgServers) {
+  basicRevenue <- 1
+  optRevenue <- 1.5
+  serverCost <- 10
+  
+  precision <- 1e-5
+  
+  maxThroughput <- maxServers * maxServiceRate
+  revenueWeight <- 0.7
+  serverWeight <- 0.3
+  Ur <- (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
+  Uc <- serverCost * (maxServers - avgServers)
+  UrOpt <- arrivalRateMean * optRevenue
+  
+  Urt <- 1 - ((avgResponseTime-RT_THRESHOLD)/RT_THRESHOLD)
+  utility <- Urt*((revenueWeight*Ur)+(serverWeight*Uc))
+
+}
+periodUtilityICSA2022 <- function(maxServers, maxServiceRate, arrivalRateMean, dimmer,
+                                  evaluationPeriod, RT_THRESHOLD, avgResponseTime,
+                                  avgServers) {
+  basicRevenue <- 1
+  optRevenue <- 1.5
+  serverCost <- 10
+  
+  precision <- 1e-5
+  
+  maxThroughput <- maxServers * maxServiceRate
+
+  Ur <- (arrivalRateMean * ((1 - dimmer) * basicRevenue + dimmer * optRevenue))
+  Uc <- serverCost * (maxServers - avgServers)
+  UrOpt <- arrivalRateMean * optRevenue
+  
+  utility <- ifelse(avgResponseTime <= RT_THRESHOLD & Ur >= UrOpt - precision, Ur + Uc,
+                    ifelse(avgResponseTime <= RT_THRESHOLD, Ur,
+                           (pmin(0.0, arrivalRateMean - maxThroughput) * optRevenue) + Uc))
+}
+
 readVector <- function(dbconn, vectorName, moduleName) {
     query <- paste("SELECT simtimeRaw/1e12 as x, CAST(value as REAL) as y FROM vector NATURAL JOIN vectorData",
                   " WHERE vectorName='", vectorName, "'", sep="")
@@ -120,8 +160,8 @@ readVector <- function(dbconn, vectorName, moduleName) {
     dbGetQuery(dbconn, query)  
 }
 
-plotResults <- function(config, folder="SWIM", run, saveAs=NULL, instantaneousUtility=FALSE,
-                         periodGrid=FALSE, utilityFc=periodUtilitySEAMS2017A,
+plotResults <- function(config, folder="SWIM", run, saveAs=NULL, instantaneousUtility=TRUE,
+                         periodGrid=FALSE, utilityFc=periodUtilitySEAMS2022,
                          brief=FALSE) {
   USE_COMPUTED_UTILITY <- TRUE
   require(reshape2)
@@ -260,7 +300,7 @@ plotResults <- function(config, folder="SWIM", run, saveAs=NULL, instantaneousUt
   
   pltUtility <- ggplot(md, aes(x=time,y=cumsum(value))) + 
     geom_line(data=subset(md, variable=="utility")) + 
-    ylab('cum. utility')
+    ylab(sprintf("cum. utility \n %f", totalUtility))
   
   # this computes the avg of the amount of RT excess over the threshold over the whole run
   avgError <- sum(pmax(avgresponse$y - RT_THRESHOLD_SEC, 0)) / (length(avgresponse$y) * evaluationPeriod)
