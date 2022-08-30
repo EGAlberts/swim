@@ -34,36 +34,37 @@ Define_Module(DummyAdaptationManager);
  */
 Tactic* DummyAdaptationManager::evaluate() {
     MacroTactic* pMacroTactic = new MacroTactic;
-    Model* pModel = getModel();
-    const double dimmerStep = 1.0 / (pModel->getNumberOfDimmerLevels() - 1);
-    double dimmer = pModel->getDimmerFactor();
-    double spareUtilization =  pModel->getConfiguration().getActiveServers() - pModel->getObservations().utilization;
-    bool isServerBooting = pModel->getServers() > pModel->getActiveServers();
-    bool isServerRemoving = pModel->getServers() < pModel->getActiveServers();
-    double responseTime = pModel->getObservations().avgResponseTime;
-    double totalUtilization = pModel->getObservations().utilization; //I think this is correct
-    double activeServers = pModel->getConfiguration().getActiveServers();
-    double servers = pModel->getServers();
-    double maxServers = pModel->getMaxServers();
-    double arrivalRate = (pModel->getEnvironment().getArrivalMean() > 0) ? (1 / pModel->getEnvironment().getArrivalMean()) : 0.0;
-    PyObject *pModule, *pFunc;
-    PyObject *pArgs, *pValue, *pElement, *pName;
+    // Model* pModel = getModel();
+    // const double dimmerStep = 1.0 / (pModel->getNumberOfDimmerLevels() - 1);
+    // double dimmer = pModel->getDimmerFactor();
+    // double spareUtilization =  pModel->getConfiguration().getActiveServers() - pModel->getObservations().utilization;
+    // bool isServerBooting = pModel->getServers() > pModel->getActiveServers();
+    // bool isServerRemoving = pModel->getServers() < pModel->getActiveServers();
+    // double responseTime = pModel->getObservations().avgResponseTime;
+    // double totalUtilization = pModel->getObservations().utilization; //I think this is correct
+    // double activeServers = pModel->getConfiguration().getActiveServers();
+    // double servers = pModel->getServers();
+    // double maxServers = pModel->getMaxServers();
+    // double arrivalRate = (pModel->getEnvironment().getArrivalMean() > 0) ? (1 / pModel->getEnvironment().getArrivalMean()) : 0.0;
+    // PyObject *pModule, *pFunc;
+    // PyObject *pArgs, *pValue, *pElement, *pName;
 
-    int i;
+    // int i;
 
 
-    Py_Initialize();
-    pName = PyUnicode_DecodeFSDefault("multiply");
-    /* Error checking of pName left out */
+    // Py_Initialize();
+    // pName = PyUnicode_DecodeFSDefault("multiply");
+    // /* Error checking of pName left out */
 
-    pModule = PyImport_Import(pName);
-    Py_DECREF(pName);
+    // pModule = PyImport_Import(pName);
+    // Py_DECREF(pName);
 
-    if (pModule != NULL) {
-        pFunc = PyObject_GetAttrString(pModule, "multiply");
-        /* pFunc is a new reference */
+    // if (pModule != NULL) {
+    //     pFunc = PyObject_GetAttrString(pModule, "multiply");
+    //     /* pFunc is a new reference */
 
-        printf("got here");}
-        return pMacroTactic;
+    //     printf("got here");}
+    
+    return pMacroTactic;
 
 }
