@@ -1,11 +1,11 @@
 
-from some_bandits.bandits.Bandit import Bandit
-from some_bandits.utilities import convert_conf, RT_THRESH, calculate_utility, save_to_pickle
-from some_bandits.bandit_options import bandit_args
-from some_bandits.bandits import init_bandit
-from some_bandits.bandits.UCB import CUM_REWARD, UCB
-from some_bandits.bandits.EXP3 import EXP3
-from some_bandits.bandits.EwS import EwS
+from masced_bandits.bandits.Bandit import Bandit
+from masced_bandits.utilities import convert_conf, RT_THRESH, calculate_utility, save_to_pickle
+from masced_bandits.bandit_options import bandit_args
+from masced_bandits.bandits import init_bandit
+from masced_bandits.bandits.UCB import CUM_REWARD, UCB
+from masced_bandits.bandits.EXP3 import EXP3
+from masced_bandits.bandits.EwS import EwS
 
 
 class Cleaner():
@@ -146,7 +146,7 @@ def activate_experiment(experiment_dict):
 #We take control over if the bandit is actually called by SWIM or if we clean
 def start(bandit_name,  dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, basic_throughput, opt_throughput, basic_response, opt_response, service_time, formula, experimentID, elapsedTime):
     activate_experiment(experimentsECSA[experimentID])
-    
+    print("called\n\n\n")
     # print(str(arrival_rate) + "arrival rate")
     # print(str(response_time) + "response time")
     # print(str(basic_throughput) + "basic_throughput")
@@ -198,7 +198,7 @@ def start(bandit_name,  dimmer, response_time, activeServers, servers, max_serve
                 if(bandit.last_action != (servers, dimmer)): 
                     raise RuntimeError("Previously chosen configuration " + str(bandit.last_action) + " is not reflected in SWIM's" + str((servers,dimmer)))
                
-                new_choice = bandit.start_strategy(reward[0])
+                new_choice = bandit.get_next_arm(reward[0])
                 print("returned arm " + str(new_choice))
                 #bandit.visualize()
                 #print("new choice is " + str(new_choice))
@@ -224,7 +224,7 @@ def start(bandit_name,  dimmer, response_time, activeServers, servers, max_serve
     else:
         #print("first this")
         #print((bandit_name,formula))
-        bandit_args["bandit_instance"] = init_bandit(bandit_name,formula)
+        bandit_args["bandit_instance"] = init_bandit(name = bandit_name, formula = formula)
         return start(bandit_name,  dimmer, response_time, activeServers, servers, max_servers, total_util, arrival_rate, basic_throughput, opt_throughput, basic_response, opt_response, service_time, formula, experimentID, elapsedTime)
     #start_strategy: takes swim variables, returns swim tactics
 
