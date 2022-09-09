@@ -7,7 +7,7 @@ SWIM uses Docker containers to automate deployment of the simulation into a virt
 ## Creating and connecting to a container
 As mentioned, SWIM is hosted on Docker Hub, and online repository for Docker containers. The first time docker is run, containers will be downloaded onto your host machine (multiple downloads will occur because containers are layered on each other, and SWIM is built on a number of Linux containers for windowing, simulation, etc.). This can be done with the following command run in a terminal or command prompt:
 ```
-   > docker run -d -p 5901:5901 -p 6901:6901 --name swim gabrielmoreno/swim
+   > docker run -d -p 5901:5901 -p 6901:6901 --name swim egalberts/swim
 ```
 
 The output will be something like this as it is downloading the Docker images.
@@ -116,3 +116,9 @@ To launch the OMNeT++ IDE, launch Applications > Development > OMNeT++.
 
 The external adaptation manager is included in the project `simple_am` in the work space.
 The adaptation manager that works as a simulation module, which is called `ReactiveAdaptationManager`, is located in `swim/src/managers/adaptation/`.
+
+## Python Bandit Extension
+This fork of SWIM includes the PythonAdaptationManager. Using the masced_bandits library found at https://github.com/EGAlberts/MASCed_bandits multi-armed bandits can be used to form the adaptation logic for SWIM. Profiles for different bandits cn be found in the bandits_sa.ini file. 
+For example:
+   > cd ~/seams-swim/swim/simulations/swim_sa/
+   > ./run.sh pyEGreedy 0 bandits_sa.ini
