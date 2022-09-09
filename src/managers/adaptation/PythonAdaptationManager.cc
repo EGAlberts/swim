@@ -32,45 +32,6 @@ using namespace omnetpp;
 
 Define_Module(PythonAdaptationManager);
 
-
-double PythonAdaptationManager::SEAMS2022Utility(double arrival_rate, double dimmer, double avg_response_time, double max_servers, double servers)
-{
-    double OPT_REVENUE = 1.5;
-    double BASIC_REVENUE = 1;
-    double SERVER_COST = 10;
-    double RT_THRESH = 0.75;
-
-    double ur = arrival_rate * ((1 - dimmer) * BASIC_REVENUE + dimmer * OPT_REVENUE);
-    double uc = SERVER_COST * (max_servers - servers);
-
-    double UPPER_RT_THRESHOLD = RT_THRESH * 4;
-
-    double delta_threshold = UPPER_RT_THRESHOLD-RT_THRESH;
-
-    double UrtPosFct = (delta_threshold/RT_THRESH);
-
-    double urt = 0;
-    if(avg_response_time <= UPPER_RT_THRESHOLD){
-        urt = ((RT_THRESH - avg_response_time)/RT_THRESH);
-    }
-    else{
-        urt = ((RT_THRESH - UPPER_RT_THRESHOLD)/RT_THRESH);
-    }
-
-    double urt_final = 0;
-    if(avg_response_time <= RT_THRESH) {
-        urt_final = urt*UrtPosFct;}
-    else{
-        urt_final = urt;}
-
-    double revenue_weight = 0.7;
-    double server_weight = 0.3;
-    double utility = urt_final*((revenue_weight*ur)+(server_weight*uc));
-
-    return utility;
-}
-
-
 /**
  * Embedded Python adaptation
  *
@@ -96,27 +57,20 @@ Tactic* PythonAdaptationManager::evaluate() {
     double servers = pModel->getServers();
     double maxServers = pModel->getMaxServers();
     double arrivalRate = (pModel->getEnvironment().getArrivalMean() > 0) ? (1 / pModel->getEnvironment().getArrivalMean()) : 0.0;
-    PyObject *pModule, *pModule2, *pFunc, *pFunc2;
-    PyObject *pArgs, *pArgs2, *pValue, *pElement, *pInstance;
+    PyObject *pModule, *pFunc;
+    PyObject *pArgs, *pValue, *pElement;
     double elapsedTime = SIMTIME_DBL(cSimulation::getActiveSimulation()->getSimTime());
-
-
-    //double utility = PythonAdaptationManager::SEAMS2022Utility(arrivalRate, dimmer, responseTime, maxServers, servers);
 
 
     if(!isServerBooting && !isServerRemoving){
 
         Py_Initialize();
 
-        std::string alg(BANDIT_ALG);
-        std::string runner_name = "some_bandits.SWIMInternalInterface"; //+ alg;
-        std::string module_name = "some_bandits." + alg;
-        std::string class_name = alg;
+        std::string runner_name = "masced_bandits.SWIMInternalInterface";
 
         pModule = PyImport_ImportModule(runner_name.c_str());
 
         if(pModule != NULL){
-
                 pFunc = PyObject_GetAttrString(pModule, "start");
 
                 if(pFunc && PyCallable_Check(pFunc)) {
@@ -149,17 +103,16 @@ Tactic* PythonAdaptationManager::evaluate() {
                         {
                         pElement = PyList_GetItem(pValue, i);
                         std::string tactic_element = PyUnicode_AsUTF8(pElement);
-                        //std::cout << "The tactic " << tactic_element << " was added\n";
 
                         switch (tactic_element[0]) {
                            case 'r': pMacroTactic->addTactic(new RemoveServerTactic); break;
                            case 'a':  pMacroTactic->addTactic(new AddServerTactic); break;
                            case 's':
-                           char * cstr = new char [tactic_element.length()+1];
-                           strcpy (cstr, tactic_element.c_str());
-                           char * parts = strtok(cstr, " ");
-                           double dimmer_value = atof(strtok(NULL, " "));
-                           pMacroTactic->addTactic(new SetDimmerTactic(dimmer_value));
+                               char * cstr = new char [tactic_element.length()+1];
+                               strcpy (cstr, tactic_element.c_str());
+                               char * parts = strtok(cstr, " ");
+                               double dimmer_value = atof(strtok(NULL, " "));
+                               pMacroTactic->addTactic(new SetDimmerTactic(dimmer_value));
                            }
                         }
 
@@ -181,9 +134,7 @@ Tactic* PythonAdaptationManager::evaluate() {
             PyErr_Print();
             fprintf(stderr, "Import Failed\n");
         }
-    //Py_Finalize();
-
-        //pMacroTactic->addTactic(new SetDimmerTactic(0.75));
+       Py_Finalize();
 
     return pMacroTactic;
 
